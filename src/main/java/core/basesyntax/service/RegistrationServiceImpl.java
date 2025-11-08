@@ -27,15 +27,19 @@ public class RegistrationServiceImpl implements RegistrationService {
             throw new RegistrationException("Login should contain at least 6 symbols.");
         }
         if (user.getPassword().length() < MIN_LENGTH) {
-            throw new RegistrationException("Password should contain at least 6 symbols.");
+            throw new RegistrationException("Not valid password length: "
+                    + user.getPassword().length()
+                    + ". Min allowed password " + "length is: " + MIN_LENGTH);
         }
         if (user.getAge() < MIN_AGE) {
-            throw new RegistrationException("User's age should be at least 18 y.o.");
+            throw new RegistrationException("Not valid age: "
+                    + user.getAge() + ". Min allowed age is "
+                    + MIN_AGE);
 
         }
         if (storageDao.get(user.getLogin()) != null) {
             throw new RegistrationException("User with login - \""
-            + user.getLogin() + "\", already exists.");
+            + user.getLogin() + "\" already exists.");
         }
         return storageDao.add(user);
     }

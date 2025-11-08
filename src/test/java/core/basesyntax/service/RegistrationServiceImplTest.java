@@ -1,31 +1,26 @@
 package core.basesyntax.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import core.basesyntax.dao.StorageDao;
+import core.basesyntax.dao.StorageDaoImpl;
+import core.basesyntax.db.Storage;
 import core.basesyntax.model.User;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class RegistrationServiceImplTest {
     private static final int VALID_AGE = 18;
-    private static final int AGE_OVER_18 = 24;
     private static final String VALID_LOGIN = "UserLogin1";
     private static final String VALID_PASSWORD = "Passwd";
     private static RegistrationService registrationService;
     private User user;
 
-    @BeforeAll
-    static void beforeAll() {
-        registrationService = new RegistrationServiceImpl();
-    }
-
     @BeforeEach
     void setUp() {
+        Storage.people.clear();
+        registrationService = new RegistrationServiceImpl();
         user = new User();
     }
 
@@ -60,22 +55,38 @@ class RegistrationServiceImplTest {
 
     @Test
     void register_ageUnder18_notOk() {
+        user.setLogin(VALID_LOGIN);
+        user.setPassword(VALID_PASSWORD);
         user.setAge(12);
-        int actual = user.getAge();
-        assertFalse(actual >= VALID_AGE);
+        assertThrows(RegistrationException.class, () -> registrationService.register(user));
+        user.setAge(17);
+        assertThrows(RegistrationException.class, () -> registrationService.register(user));
+        user.setAge(0);
+        assertThrows(RegistrationException.class, () -> registrationService.register(user));
     }
 
     @Test
     void register_ageOver18_Ok() {
-        user.setAge(AGE_OVER_18);
-        int actual = user.getAge();
-        assertTrue(actual >= VALID_AGE);
+        user.setPassword(VALID_PASSWORD);
+        user.setLogin(VALID_LOGIN);
+        user.setAge(19);
+        User saved = registrationService.register(user);
+        assertEquals(user, saved);
+        User user1 = new User();
+        user1.setPassword(VALID_PASSWORD);
+        user1.setLogin("anotherUser");
+        user1.setAge(27);
+        User saved1 = registrationService.register(user1);
+        assertEquals(user1, saved1);
     }
 
     @Test
     void register_ageEquals18_Ok() {
+        user.setPassword(VALID_PASSWORD);
+        user.setLogin(VALID_LOGIN);
         user.setAge(VALID_AGE);
-        assertEquals(VALID_AGE, user.getAge());
+        User saved = registrationService.register(user);
+        assertEquals(user, saved);
     }
 
     @Test
@@ -100,12 +111,17 @@ class RegistrationServiceImplTest {
 
     @Test
     void register_passwordLength_Ok() {
+        user.setAge(VALID_AGE);
+        user.setLogin(VALID_LOGIN);
         user.setPassword("testPass");
-        int length = user.getPassword().length();
-        assertTrue(length >= VALID_PASSWORD.length());
-        user.setPassword("passwd");
-        length = user.getPassword().length();
-        assertTrue(length >= VALID_PASSWORD.length());
+        User saved = registrationService.register(user);
+        assertEquals(user, saved);
+        User user1 = new User();
+        user1.setAge(25);
+        user1.setLogin("qweasfg");
+        user1.setPassword("edge12");
+        User saved1 = registrationService.register(user1);
+        assertEquals(user1, saved1);
     }
 
     @Test
@@ -133,12 +149,8 @@ class RegistrationServiceImplTest {
         user.setLogin(VALID_LOGIN);
         user.setAge(VALID_AGE);
         user.setPassword(VALID_PASSWORD);
-        registrationService.register(user);
+        StorageDao storageDao = new StorageDaoImpl();
+        storageDao.add(user);
         assertThrows(RegistrationException.class, () -> registrationService.register(user));
-    }
-
-    @AfterAll
-    static void afterAll() {
-        registrationService = null;
     }
 }
