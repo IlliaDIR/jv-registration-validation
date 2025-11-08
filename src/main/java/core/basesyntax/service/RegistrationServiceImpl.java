@@ -17,6 +17,10 @@ public class RegistrationServiceImpl implements RegistrationService {
         if (user == null) {
             throw new RegistrationException("User should not be null.");
         }
+        if (storageDao.get(user.getLogin()) != null) {
+            throw new RegistrationException("User with login - \""
+                    + user.getLogin() + "\" already exists.");
+        }
         if (user.getLogin() == null) {
             throw new RegistrationException("Login should not be null.");
         }
@@ -38,11 +42,6 @@ public class RegistrationServiceImpl implements RegistrationService {
             throw new RegistrationException("Not valid age: "
                     + user.getAge() + ". Min allowed age is "
                     + MIN_AGE);
-
-        }
-        if (storageDao.get(user.getLogin()) != null) {
-            throw new RegistrationException("User with login - \""
-            + user.getLogin() + "\" already exists.");
         }
         return storageDao.add(user);
     }
