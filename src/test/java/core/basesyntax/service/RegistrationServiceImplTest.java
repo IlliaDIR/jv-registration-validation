@@ -14,13 +14,15 @@ class RegistrationServiceImplTest {
     private static final int VALID_AGE = 18;
     private static final String VALID_LOGIN = "UserLogin1";
     private static final String VALID_PASSWORD = "Passwd";
-    private static RegistrationService registrationService;
+    private RegistrationService registrationService;
+    private StorageDao storageDao;
     private User user;
 
     @BeforeEach
     void setUp() {
         Storage.people.clear();
-        registrationService = new RegistrationServiceImpl();
+        storageDao = new StorageDaoImpl();
+        registrationService = new RegistrationServiceImpl(storageDao);
         user = new User();
     }
 
@@ -70,13 +72,15 @@ class RegistrationServiceImplTest {
         user.setPassword(VALID_PASSWORD);
         user.setLogin(VALID_LOGIN);
         user.setAge(19);
-        User saved = registrationService.register(user);
+        registrationService.register(user);
+        User saved = storageDao.get(user.getLogin());
         assertEquals(user, saved);
         User user1 = new User();
         user1.setPassword(VALID_PASSWORD);
         user1.setLogin("anotherUser");
         user1.setAge(27);
-        User saved1 = registrationService.register(user1);
+        registrationService.register(user1);
+        User saved1 = storageDao.get(user1.getLogin());
         assertEquals(user1, saved1);
     }
 
