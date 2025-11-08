@@ -91,6 +91,7 @@ class RegistrationServiceImplTest {
         user.setLogin(VALID_LOGIN);
         user.setAge(VALID_AGE);
         User saved = registrationService.register(user);
+        assertNotNull(storageDao.get(user.getLogin()));
         assertEquals(user, saved);
     }
 
@@ -120,12 +121,14 @@ class RegistrationServiceImplTest {
         user.setLogin(VALID_LOGIN);
         user.setPassword("testPass");
         User saved = registrationService.register(user);
+        assertNotNull(storageDao.get(user.getLogin()));
         assertEquals(user, saved);
         User user1 = new User();
         user1.setAge(25);
         user1.setLogin("qweasfg");
         user1.setPassword("edge12");
         User saved1 = registrationService.register(user1);
+        assertNotNull(storageDao.get(user.getLogin()));
         assertEquals(user1, saved1);
     }
 
